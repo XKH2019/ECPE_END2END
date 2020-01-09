@@ -1,0 +1,109 @@
+656 11
+ (9,8)
+1,null,null,她 作出 一个 决定 要 把 老师 和 同学 的 捐款 加上 自己 的 压岁钱
+2,null,null,捐给 受灾 的 小朋友
+3,null,null,爸爸妈妈 都 支持 她 的 决定
+4,null,null,并 设法 联系 到 了 上海市 残疾人 福利 基金会
+5,null,null,昨天下午
+6,null,null,基金会 秘书长 李晓雪 前去 接受 了 捐款
+7,null,null,李晓雪 说
+8,null,null,一个 身患 重病 的 孩子 还 能 想到 他人
+9,happiness,敬佩,让 人 敬佩
+10,null,null,基金会 将 用 这笔 捐款 购买 书包 和 文具 送到 灾区 孩子 的 手中
+11,null,null,也 要 把 这个 爱心 故事 告诉 灾区 的 孩子
+657 14
+ (7,6)
+1,null,null,今年 100 岁 的 关 英汉 是 沈河区 风雨 坛 卫生 服务中心 的 退休职工
+2,null,null,他 生活 并 不 富裕
+3,null,null,家住 30 余平方米 的 单间
+4,null,null,条件 极为 简朴
+5,null,null,但 每逢 国家 遭难
+6,null,null,老人 都 会 慷慨 相助
+7,happiness,敬佩,令人 敬佩
+8,null,null,老人 的 儿子 关宗禹 说
+9,null,null,父亲 退休 后
+10,null,null,花销 很少
+11,null,null,积攒 下来 的 退休金 几乎 全部 用来 捐灾助 贫
+12,null,null,儿女 们 起初 不 理解
+13,null,null,但 看到 每次 捐款 之后 老人 都 像 中奖 一样 高兴
+14,null,null,也 就 渐渐 顺着 他 了
+658 13
+ (8,7)
+1,null,null,就 在 许多 群众 仍 惊慌 未定 之 时
+2,null,null,高泽美 已 把 全村 跑 了 个 遍
+3,null,null,确认 大家 都 安全
+4,null,null,他 抬表一 看
+5,null,null,还 不到 10 分钟
+6,null,null,地震 后
+7,null,null,高泽美 完全 顾不上 家
+8,sadness,愧疚,对 妻子 一直 很 愧疚
+9,null,null,23 日 凌晨 回到 家中
+10,null,null,高泽美 看到 墙角 里 放 着 上面 送来 的 民政 救灾 帐篷
+11,null,null,一肚子火 就 上来 了
+12,null,null,上面 拨来 的 帐篷 还 不 多
+13,null,null,我家 怎么 能先 拿
+659 19
+ (15,14)
+1,null,null,他 说
+2,null,null,此次 地震 的 地形 复杂
+3,null,null,都 在 山区
+4,null,null,遇到 特殊 情况 无法 起降
+5,null,null,今日 天气 良好
+6,null,null,已 出动 飞机 16 架次
+7,null,null,主要 往 重灾区 运输 粮食 和 医护人员
+8,null,null,经过 8 分钟 飞行
+9,null,null,飞机 抵达 太平镇
+10,null,null,记者 在 街道 看到
+11,null,null,两边 的 房屋 有 的 已 倒塌
+12,null,null,有 的 裂 了 数厘米 宽逢
+13,null,null,屋顶 瓦片 多数 摔 在 地上
+14,null,null,回忆起 地震 的 情景
+15,fear,心有余悸,太平镇 胜利村 的 袁 永宁 依然 心有余悸
+16,null,null,当时
+17,null,null,他 正在 地下室 喝水
+18,null,null,忽然 感到 地面 剧烈 拱 起来
+19,null,null,就 赶快 跑 出来
+660 11
+ (3,3), (11,10)
+1,null,null,去年 冬天
+2,null,null,73 岁 的 老伴 在 长安区 找 了 份 兼职
+3,fear,害怕,害怕 单位 嫌 他 年纪 大
+4,null,null,他 谎称 只有 60 来 岁
+5,null,null,并托 熟人 给 单位 老板 买 了 一条 烟
+6,null,null,干 了 仅 一个月
+7,null,null,老伴 生病 做手术
+8,null,null,单位 从 身份证 上 得知 了 真实 年龄
+9,null,null,还 没 等 他 出院
+10,null,null,单位 打 来 电话 将 他 辞退
+11,sadness,伤心,这 让 我 感到 很 伤心
+248 29
+ (25,24)
+1,null,null,谈话 间
+2,null,null,何某 激怒 了 脾气 暴躁 的 妻子
+3,null,null,二人 越吵 越 凶
+4,null,null,最终 升级 到 了 动手 的 地步
+5,null,null,暴怒 的 妻子 用 随身带 的 手包 不断 击打 何某
+6,null,null,何某 条件反射 不停 挡 着 妻子 的 轮番 袭击
+7,null,null,不料
+8,null,null,何某 的 衣袖 挂 绊 到 了 档位 上 的 排挡 杆
+9,null,null,车子 挂 上 挡位
+10,null,null,本来 就 发动 开着 空调 的 车子 突然 猛冲 出去
+11,null,null,直接 冲向 了 马路 对面 停 在 车位 上 的 奔驰 越野车 和 别克 车
+12,null,null,何某 和 妻子 都 懵 了
+13,null,null,何某 情急 下猛 踩 刹车
+14,null,null,由于 醉酒 和 惊慌 竟 踩 在 了 油门 上
+15,null,null,越野车 更 像 脱缰 的 野马 冲撞 上去
+16,null,null,只 听 哐当
+17,null,null,哐当
+18,null,null,两声 巨响
+19,null,null,与 对面 的 奔驰 别克 来 了 个 亲密 接触
+20,null,null,在 巨大 撞击力 作用 下
+21,null,null,长城 车 前排 气囊 全部 弹 出
+22,null,null,何某 夫妻 被 弹出 的 安全气囊 强大 的 冲击力 弹伤 了 脖子 和 脸面
+23,null,null,让 人 意想不到 的 是
+24,null,null,此时 夫妻 二人 继续 争吵 指责 因 对方 才 出 了 事故
+25,anger,情绪激动,何某 情绪 激动不已
+26,null,null,下车 称要 去 跳江
+27,null,null,妻子 赶紧 追 了 上去
+28,null,null,吵骂 着 要死 一起 死
+29,null,null,这才 出现 事故现场 无人 的 情况
