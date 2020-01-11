@@ -10,6 +10,7 @@ import sys, os, time, codecs, pdb
 
 from utils.tf_funcs import *
 from utils.prepare_data import *
+from layer import ECFU
 
 FLAGS = tf.app.flags.FLAGS
 # >>>>>>>>>>>>>>>>>>>> For Model <<<<<<<<<<<<<<<<<<<< #
@@ -35,13 +36,36 @@ tf.app.flags.DEFINE_float('keep_prob2', 1.0, 'softmax layer dropout keep prob')
 tf.app.flags.DEFINE_float('l2_reg', 0.00001, 'l2 regularization')
 
 
-            #       语料库中的词向量 位置向量   输入 子句长度                         距离
-def build_model(word_embedding, pos_embedding, x, sen_len, keep_prob1, keep_prob2, distance, y, RNN = biLSTM):
+            #       语料库中的词向量 位置向量   输入 子句长度                         距离word_embedding, pos_embedding, x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y
+def build_model(word_embedding, pos_embedding, x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y,doc_len_context, RNN = biLSTM):
+    x_context = tf.nn.embedding_lookup(word_embedding, x_context)
+    inputs = tf.reshape(x_context, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])  # 沿着75展开   30 200
+    inputs = tf.nn.dropout(inputs, keep_prob=keep_prob1)
+    x_context_len = tf.reshape(x_context_len, [-1])  # batchsize 个子句长度
+
+    def get_s(inputs, name):  # xianzai的inputs 不是文档级 batchsize级别的
+        with tf.name_scope('word_encode'):
+            inputs = RNN(inputs, x_context_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope + 'word_layer' + name)  # 30 200
+        with tf.name_scope('word_attention'):
+            sh2 = 2 * FLAGS.n_hidden
+            w1 = get_weight_varible('word_att_w1' + name, [sh2, sh2])
+            b1 = get_weight_varible('word_att_b1' + name, [sh2])
+            w2 = get_weight_varible('word_att_w2' + name, [sh2, 1])
+            s = att_var(inputs, x_context_len, w1, b1, w2)  # (?,200)
+        s = tf.reshape(s, [-1, FLAGS.max_doc_len, 2 * FLAGS.n_hidden])  # (?,75,200)
+        return s
+
+    xx = get_s(inputs, name='cause_word_encode')  # s  30 200
+    xx = RNN(xx, doc_len_context, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope + 'cause_sentence_layer')   #30 200
+
+
+
+
     x = tf.nn.embedding_lookup(word_embedding, x)
-    inputs = tf.reshape(x, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])  #最后一维每个词
-    inputs = tf.nn.dropout(inputs, keep_prob=keep_prob1)   #防止过拟合 （30，500）
+    x_inputs = tf.reshape(x, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])  #最后一维每个词
+    x_inputs = tf.nn.dropout(x_inputs, keep_prob=keep_prob1)   #防止过拟合 （30，500）
     sen_len = tf.reshape(sen_len, [-1])     #将每个子句长度展成一维，然后进行顺序输入
-    def get_s(inputs, name):
+    def x_get_s(inputs, name):
         with tf.name_scope('word_encode'):  
             inputs = RNN(inputs, sen_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope+'word_layer' + name)    #[-1,maxlen,hidden*2]
 
@@ -53,8 +77,16 @@ def build_model(word_embedding, pos_embedding, x, sen_len, keep_prob1, keep_prob
             s = att_var(inputs,sen_len,w1,b1,w2)
         s = tf.reshape(s, [-1, 2 * 2 * FLAGS.n_hidden])
         return s
-    s = get_s(inputs, name='cause_word_encode')
+    s = x_get_s(x_inputs, name='cause_word_encode')
+
     dis = tf.nn.embedding_lookup(pos_embedding, distance)
+
+    ecfu=ECFU(bs=FLAGS.batch_size, sent_len=FLAGS.max_sen_len, n_in=2*FLAGS.n_hidden, n_out=2*FLAGS.n_hidden, name="ECFU")
+
+    h1=ecfu(xx,s)
+
+    h2=ecfu(h1,s)
+
     s = tf.concat([s, dis], 1)
 
     s1 = tf.nn.dropout(s, keep_prob=keep_prob2)
@@ -71,9 +103,9 @@ def print_training_info():
         FLAGS.batch_size,  FLAGS.learning_rate, FLAGS.keep_prob1, FLAGS.keep_prob2, FLAGS.l2_reg))
     print('training_iter-{}, scope-{}\n'.format(FLAGS.training_iter, FLAGS.scope))
 
-def get_batch_data(x, sen_len,x_context,x_context_len, keep_prob1, keep_prob2, distance, y, batch_size, test=False):
+def get_batch_data(x, sen_len,x_context,x_context_len, keep_prob1, keep_prob2, distance, y,doc_len_context, batch_size, test=False):
     for index in batch_index(len(y), batch_size, test):
-        feed_list = [x[index], sen_len[index],x_context[index],x_context_len[index], keep_prob1, keep_prob2, distance[index], y[index]]
+        feed_list = [x[index], sen_len[index],x_context[index],x_context_len[index], keep_prob1, keep_prob2, distance[index], y[index],doc_len_context[index]]
         yield feed_list, len(index)
 
 def run():
@@ -98,10 +130,13 @@ def run():
     keep_prob2 = tf.placeholder(tf.float32)
     distance = tf.placeholder(tf.int32, [None])  #每个pair的一个距离
     y = tf.placeholder(tf.float32, [None, FLAGS.n_class]) #每个pair标签两列 （1，0）（0，1）
-    placeholders = [x, sen_len, keep_prob1, keep_prob2, distance, y]
+    x_context=tf.placeholder(tf.int32, [None, 30, FLAGS.max_sen_len])
+    x_context_len=tf.placeholder(tf.int32, [None, 30])
+    doc_len_context=tf.placeholder(tf.int32, [None])
+    placeholders = [x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y,doc_len_context]
     
     #N*2 预测的正确的         标量
-    pred_pair, reg = build_model(word_embedding, pos_embedding, x, sen_len, keep_prob1, keep_prob2, distance, y)
+    pred_pair, reg = build_model(word_embedding, pos_embedding, x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y,doc_len_context)
     loss_op = - tf.reduce_mean(y * tf.log(pred_pair)) + reg * FLAGS.l2_reg
     #训练有而测试没有
     optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(loss_op)
@@ -126,8 +161,8 @@ def run():
             # Data Code Block
             train_file_name = 'fold{}_train.txt'.format(fold, FLAGS)
             test_file_name = 'fold{}_test.txt'.format(fold)
-            tr_pair_id_all, tr_pair_id, tr_y, tr_x, tr_sen_len, tr_distance,tr_x_context,tr_x_context_len = load_data_2nd_step(save_dir + train_file_name, word_id_mapping, max_sen_len = FLAGS.max_sen_len)
-            te_pair_id_all, te_pair_id, te_y, te_x, te_sen_len, te_distance,te_x_context,te_x_context_len = load_data_2nd_step(save_dir + test_file_name, word_id_mapping, max_sen_len = FLAGS.max_sen_len)
+            tr_pair_id_all, tr_pair_id, tr_y, tr_x, tr_sen_len, tr_distance,tr_x_context,tr_x_context_len ,tr_doc_len_context= load_data_2nd_step(save_dir + train_file_name, word_id_mapping, max_sen_len = FLAGS.max_sen_len)
+            te_pair_id_all, te_pair_id, te_y, te_x, te_sen_len, te_distance,te_x_context,te_x_context_len ,te_doc_len_context= load_data_2nd_step(save_dir + test_file_name, word_id_mapping, max_sen_len = FLAGS.max_sen_len)
             
             max_acc_subtask, max_f1 = [-1.]*2   #最大的准确率 和最大的f1值 每一个文件
             print('train docs: {}    test docs: {}'.format(len(tr_x), len(te_x)))
@@ -135,7 +170,7 @@ def run():
             for i in range(FLAGS.training_iter):
                 start_time, step = time.time(), 1
                 # train   yige epoch
-                for train, _ in get_batch_data(tr_x, tr_sen_len,tr_x_context,tr_x_context_len, FLAGS.keep_prob1, FLAGS.keep_prob2, tr_distance, tr_y, FLAGS.batch_size):  #get_batch_size解决！
+                for train, _ in get_batch_data(tr_x, tr_sen_len,tr_x_context,tr_x_context_len, FLAGS.keep_prob1, FLAGS.keep_prob2, tr_distance, tr_y, tr_doc_len_context,FLAGS.batch_size):  #get_batch_size解决！
                     _, loss, pred_y, true_y, acc = sess.run(
                         [optimizer, loss_op, pred_y_op, true_y_op, acc_op], feed_dict=dict(zip(placeholders, train)))
                     print('step {}: train loss {:.4f} acc {:.4f}'.format(step, loss, acc))

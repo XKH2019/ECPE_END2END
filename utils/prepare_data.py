@@ -124,7 +124,7 @@ def stopwordslist():
      stopwords = [line.strip() for line in open('data/stopwords.txt',encoding='UTF-8').readlines()]
      return stopwords
 
-def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 45):
+def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 30):
    #  print('load data_file: {}'.format(input_file))
    #  pair_id_all, pair_id, y, xc1,xc2,x, sen_len, distance,doclongth = [],[], [], [], [], [], [],[],[]
    #  originsenlen=[]  #meige zi句真实长度 用于计算 每个子句中词的到子句的距离
@@ -203,7 +203,7 @@ def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 45)
    #  return pair_id_all, pair_id, y, x, xc1,xc2,sen_len, distance,originsenlen,doclongth
    max_context_len=30
    print('load data_file: {}'.format(input_file))
-   pair_id_all, pair_id, y, x, sen_len, distance ,x_context,x_context_len= [], [], [], [], [], [],[],[]
+   pair_id_all, pair_id, y, x, sen_len, distance ,x_context,x_context_len,doc_len_context= [], [], [], [], [], [],[],[],[]
 
    n_cut = 0
    inputFile = open(input_file, 'r')
@@ -213,6 +213,10 @@ def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 45)
        line = line.strip().split()
        doc_id = int(line[0])
        d_len = int(line[1])
+       if d_len < 30:
+           doc_len_context.append(d_len)
+       else:
+           doc_len_context.append(30)
 
        pairs = eval(inputFile.readline().strip())  # yuce的pair列表  dierhang
 
@@ -260,7 +264,7 @@ def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 45)
 
 
    # N*2  N*2*45 N*2  N
-   y, x, sen_len, distance,x_context,x_context_len = map(np.array, [y, x, sen_len, distance,x_context,x_context_len])
+   y, x, sen_len, distance,x_context,x_context_len,doc_len_context = map(np.array, [y, x, sen_len, distance,x_context,x_context_len,doc_len_context])
 
    for var in ['y', 'x', 'sen_len', 'distance']:
        print('{}.shape {}'.format(var, eval(var).shape))
