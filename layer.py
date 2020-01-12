@@ -192,7 +192,7 @@ class ECFU:
         self.n_out = n_out
         self.name = name
         self.fc_gate = Linear(n_in=self.n_in, n_out=self.n_out, name="Gate")
-        self.fc_trans = Linear(n_in=2*self.n_in, n_out=self.n_out, name="Trans")
+        self.fc_trans = Linear(n_in=3*self.n_in, n_out=self.n_out, name="Trans")
         # for model with highway transformation
         self.layers = [self.fc_gate, self.fc_trans]
         # for model without highway transformation
@@ -220,15 +220,21 @@ class ECFU:
         # (max_len, bs, n_in)
         x_ = x.dimshuffle(1, 0, 2)
         # (bs, n_in, target_len)
-        xt_ = xt.dimshuffle(0, 2, 1)
+        xt1=xt[0]
+        xt2=xt[1]
+        xt_1= xt1.dimshuffle(0, 2, 1)
+        xt_2 = xt2.dimshuffle(0, 2, 1)
+
         x_new = []
         for i in range(self.sent_len):
             # (bs, n_in)
             xi = x_[i]
             # shape: (bs, sent_len)
-            alphai = T.nnet.softmax(T.batched_dot(xt, xi.dimshuffle(0, 1, 'x')).flatten(2))
-            ti = T.batched_dot(xt_, alphai.dimshuffle(0, 1, 'x')).flatten(2)
-            xi_new = T.tanh(self.fc_trans(x=T.concatenate([xi, ti], axis=1)))
+            alphai = T.nnet.softmax(T.batched_dot(xt1, xi.dimshuffle(0, 1, 'x')).flatten(2))
+            ti1 = T.batched_dot(xt_1, alphai.dimshuffle(0, 1, 'x')).flatten(2)
+            alphai = T.nnet.softmax(T.batched_dot(xt2, xi.dimshuffle(0, 1, 'x')).flatten(2))
+            ti2 = T.batched_dot(xt_2, alphai.dimshuffle(0, 1, 'x')).flatten(2)
+            xi_new = T.tanh(self.fc_trans(x=T.concatenate([ti1,xi,ti2], axis=1)))
             x_new.append(xi_new)
         x_new = T.stack(x_new, axis=0).dimshuffle(1, 0, 2)
         return trans_gate * x_new + (1.0 - trans_gate) * x

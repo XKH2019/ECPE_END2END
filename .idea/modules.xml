@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ECPE_END2END.iml" filepath="$PROJECT_DIR$/.idea/ECPE_END2END.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../TNet/.idea/TNet.iml" filepath="$PROJECT_DIR$/../../TNet/.idea/TNet.iml" />
     </modules>
   </component>
 </project>

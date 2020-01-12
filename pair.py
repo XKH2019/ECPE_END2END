@@ -38,6 +38,7 @@ tf.app.flags.DEFINE_float('l2_reg', 0.00001, 'l2 regularization')
 
             #       语料库中的词向量 位置向量   输入 子句长度                         距离word_embedding, pos_embedding, x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y
 def build_model(word_embedding, pos_embedding, x, sen_len, x_context,x_context_len,keep_prob1, keep_prob2, distance, y,doc_len_context, RNN = biLSTM):
+    # 上下文
     x_context = tf.nn.embedding_lookup(word_embedding, x_context)
     inputs = tf.reshape(x_context, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])  # 沿着75展开   30 200
     inputs = tf.nn.dropout(inputs, keep_prob=keep_prob1)
@@ -57,40 +58,43 @@ def build_model(word_embedding, pos_embedding, x, sen_len, x_context,x_context_l
 
     xx = get_s(inputs, name='cause_word_encode')  # s  30 200
     xx = RNN(xx, doc_len_context, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope + 'cause_sentence_layer')   #30 200
-
-
-
-
+    # 情感原因句对
     x = tf.nn.embedding_lookup(word_embedding, x)
     x_inputs = tf.reshape(x, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])  #最后一维每个词
     x_inputs = tf.nn.dropout(x_inputs, keep_prob=keep_prob1)   #防止过拟合 （30，500）
     sen_len = tf.reshape(sen_len, [-1])     #将每个子句长度展成一维，然后进行顺序输入
+    # def x_get_s(inputs, name):
+    #     with tf.name_scope('word_encode'):
+    #         inputs = RNN(inputs, sen_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope+'word_layer' + name)    #[-1,maxlen,hidden*2]
+    #
+    #     with tf.name_scope('word_attention'):
+    #         sh2 = 2 * FLAGS.n_hidden
+    #         w1 = get_weight_varible('word_att_w1' + name, [sh2, sh2])
+    #         b1 = get_weight_varible('word_att_b1' + name, [sh2])
+    #         w2 = get_weight_varible('word_att_w2' + name, [sh2, 1])
+    #         s = att_var(inputs,sen_len,w1,b1,w2)
+    #     s = tf.reshape(s, [-1, 2 * 2 * FLAGS.n_hidden])
+    #     return s
+
     def x_get_s(inputs, name):
-        with tf.name_scope('word_encode'):  
-            inputs = RNN(inputs, sen_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope+'word_layer' + name)    #[-1,maxlen,hidden*2]
+        inputs = RNN(inputs, sen_len, n_hidden=FLAGS.n_hidden,scope=FLAGS.scope + 'word_layer' + name)  # [-1,maxlen,hidden*2]
+        return inputs
+    s = x_get_s(x_inputs, name='cause_word_encode')   #2
+    s=tf.reshape(s,[2,FLAGS.batch_size,FLAGS.max_sen_len, FLAGS.embedding_dim])
 
-        with tf.name_scope('word_attention'):
-            sh2 = 2 * FLAGS.n_hidden
-            w1 = get_weight_varible('word_att_w1' + name, [sh2, sh2])
-            b1 = get_weight_varible('word_att_b1' + name, [sh2])
-            w2 = get_weight_varible('word_att_w2' + name, [sh2, 1])
-            s = att_var(inputs,sen_len,w1,b1,w2)
-        s = tf.reshape(s, [-1, 2 * 2 * FLAGS.n_hidden])
-        return s
-    s = x_get_s(x_inputs, name='cause_word_encode')
-
+    #句对之间距离
     dis = tf.nn.embedding_lookup(pos_embedding, distance)
-
+    # 融合
     ecfu=ECFU(bs=FLAGS.batch_size, sent_len=FLAGS.max_sen_len, n_in=2*FLAGS.n_hidden, n_out=2*FLAGS.n_hidden, name="ECFU")
-
+    #两层
     h1=ecfu(xx,s)
 
     h2=ecfu(h1,s)
-
-    s = tf.concat([s, dis], 1)
+    # 拼接
+    s = tf.concat([h2, dis], 1)
 
     s1 = tf.nn.dropout(s, keep_prob=keep_prob2)
-    w_pair = get_weight_varible('softmax_w_pair', [4 * FLAGS.n_hidden + FLAGS.embedding_dim_pos, FLAGS.n_class])
+    w_pair = get_weight_varible('softmax_w_pair', [FLAGS.max_sen_len * FLAGS.embedding_dim + FLAGS.embedding_dim_pos, FLAGS.n_class])
     b_pair = get_weight_varible('softmax_b_pair', [FLAGS.n_class])
     pred_pair = tf.nn.softmax(tf.matmul(s1, w_pair) + b_pair)      #NX2  实际概率
         

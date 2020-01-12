@@ -271,7 +271,7 @@ def load_data_2nd_step(input_file, word_idx, max_doc_len = 75, max_sen_len = 30)
    print('n_cut {}, (y-negative, y-positive): {}'.format(n_cut, y.sum(axis=0)))
    print('load data done!\n')
 
-   return pair_id_all, pair_id, y, x, sen_len, distance,x_context,x_context_len
+   return pair_id_all, pair_id, y, x, sen_len, distance,x_context,x_context_len,doc_len_context
 
 
 def acc_prf(pred_y, true_y, doc_len, average='binary'):
